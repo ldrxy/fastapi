@@ -1,0 +1,32 @@
+name: Sync Fork with Upstream FastAPI
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # every day at 02:00 UTC
+  workflow_dispatch:       # allow manual run
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/fastapi/fastapi.git
+          git fetch upstream
+
+      - name: Merge upstream/master into fork master
+        run: |
+          git checkout master
+          git merge upstream/master --no-edit || true
+
+      - name: Push changes back to fork
+        run: |
+          git push origin master
